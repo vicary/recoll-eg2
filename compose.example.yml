@@ -1,0 +1,53 @@
+services:
+  search:
+    build:
+      context: .
+    restart: unless-stopped
+    init: true
+    user: "65532:65532"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 128
+    cpus: 1.0
+    mem_limit: 2g
+    memswap_limit: 2g
+    environment:
+      BIND_HOST: 0.0.0.0
+      PORT: "8787"
+      SCAN_SECONDS: "900"
+      MAX_FILE_BYTES: "16777216"
+      MAX_TEXT_CHARS: "2000000"
+      MAX_FILES: "100000"
+      MAX_DEPTH: "64"
+      MAX_CHUNKS_PER_FILE: "2048"
+      MAX_RESULTS: "50"
+      MIN_FREE_BYTES: "536870912"
+    ports:
+      - "127.0.0.1:8787:8787"
+    volumes:
+      - type: bind
+        source: ./example-source
+        target: /source
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: volume
+        source: search-state
+        target: /state
+    tmpfs:
+      - /tmp:size=128m,mode=1777
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8787/health',timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 180s
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+volumes:
+  search-state: {}

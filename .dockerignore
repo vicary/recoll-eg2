@@ -1,0 +1,8 @@
+*
+!Dockerfile
+!pyproject.toml
+!README.md
+!recoll_eg2/
+!recoll_eg2/*.py
+!tests/
+!tests/*.py
